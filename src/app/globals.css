@@ -1,0 +1,300 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-brand: 185 28 28;
+    --color-surface: 250 250 249;
+    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --gradient-customer: linear-gradient(135deg, #b91c1c 0%, #e11d48 100%);
+    --gradient-vendor: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+    --gradient-organiser: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  }
+
+  .dark {
+    --color-brand: 248 113 113;
+    --color-surface: 15 15 20;
+    color-scheme: dark;
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+
+  html {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior: none;
+  }
+
+  body {
+    @apply bg-surface-primary text-slate-900 dark:bg-slate-800 dark:text-slate-100;
+    padding-top: var(--safe-area-top);
+    padding-bottom: var(--safe-area-bottom);
+    min-height: 100dvh;
+    /* Prevent rubber-banding on iOS */
+    position: fixed;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  #__next {
+    height: 100dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* iOS-style input styling */
+  input, textarea, select {
+    @apply appearance-none rounded-xl;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  /* Disable pull-to-refresh */
+  html, body {
+    overscroll-behavior-y: contain;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply w-full h-12 rounded-xl bg-brand-600 text-white font-semibold
+           text-body shadow-button active:scale-[0.97] transition-all
+           duration-200 disabled:opacity-50 disabled:active:scale-100
+           flex items-center justify-center gap-2
+           hover:bg-brand-700 hover:shadow-glow
+           dark:bg-brand-500 dark:hover:bg-brand-400;
+  }
+
+  .btn-secondary {
+    @apply w-full h-12 rounded-xl bg-white border border-slate-200
+           text-slate-800 font-semibold text-body shadow-card
+           active:scale-[0.97] transition-all duration-200
+           disabled:opacity-50 flex items-center justify-center gap-2
+           hover:border-brand-200 hover:bg-brand-50/50
+           dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100
+           dark:hover:border-brand-500/30 dark:hover:bg-slate-700;
+  }
+
+  .btn-ghost {
+    @apply w-full h-12 rounded-xl bg-transparent text-brand-600
+           font-medium text-body active:bg-brand-50 transition-colors
+           duration-150 flex items-center justify-center gap-2
+           dark:text-brand-400 dark:active:bg-brand-950;
+  }
+
+  .input-field {
+    @apply w-full h-11 px-3.5 rounded-xl border border-slate-200
+           bg-white text-sm text-slate-900 placeholder:text-slate-400
+           focus:border-brand-500 focus:ring-2 focus:ring-brand-100
+           focus:outline-none transition-all duration-200
+           dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100
+           dark:placeholder:text-slate-500 dark:focus:border-brand-400
+           dark:focus:ring-brand-900/30;
+  }
+
+  .input-error {
+    @apply border-error focus:border-error focus:ring-red-100
+           dark:focus:ring-red-900/30;
+  }
+
+  .card {
+    @apply bg-white rounded-3xl p-6 shadow-card border border-slate-100/50
+           transition-all duration-200 hover:shadow-card-hover
+           dark:bg-slate-900 dark:border-slate-800 dark:shadow-none;
+  }
+
+  .card-interactive {
+    @apply card cursor-pointer active:scale-[0.98]
+           hover:border-brand-100 hover:shadow-elevated
+           dark:hover:border-brand-800;
+  }
+
+  .glass-card {
+    @apply rounded-3xl p-6 border border-white/20
+           backdrop-blur-xl bg-white/70 shadow-glass
+           dark:bg-slate-900/70 dark:border-slate-700/30;
+  }
+
+  .gradient-text {
+    @apply bg-clip-text text-transparent
+           bg-gradient-to-r from-brand-600 via-red-500 to-accent-500
+           dark:from-brand-400 dark:via-red-400 dark:to-accent-400;
+  }
+
+  .safe-padding {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+
+  /* Global page wrapper — consistent breathing room */
+  .page-container {
+    padding-top: max(1.5rem, calc(env(safe-area-inset-top, 0px) + 0.75rem));
+    padding-bottom: 2rem;
+  }
+
+  /* Animated gradient background mesh */
+  .bg-mesh {
+    background-image:
+      radial-gradient(at 40% 20%, rgb(185 28 28 / 0.07) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, rgb(225 29 72 / 0.05) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, rgb(244 63 94 / 0.04) 0px, transparent 50%),
+      radial-gradient(at 80% 50%, rgb(248 113 113 / 0.03) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, rgb(185 28 28 / 0.05) 0px, transparent 50%);
+  }
+
+  :is(.dark .bg-mesh) {
+    background-image:
+      radial-gradient(at 40% 20%, rgb(185 28 28 / 0.15) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, rgb(225 29 72 / 0.10) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, rgb(244 63 94 / 0.08) 0px, transparent 50%),
+      radial-gradient(at 80% 50%, rgb(248 113 113 / 0.05) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, rgb(185 28 28 / 0.12) 0px, transparent 50%);
+  }
+
+  .bg-mesh-vendor {
+    background-image:
+      radial-gradient(at 40% 20%, rgb(99 102 241 / 0.08) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, rgb(30 64 175 / 0.06) 0px, transparent 50%),
+      radial-gradient(at 0% 80%, rgb(79 70 229 / 0.05) 0px, transparent 50%);
+  }
+
+  :is(.dark .bg-mesh-vendor) {
+    background-image:
+      radial-gradient(at 40% 20%, rgb(99 102 241 / 0.15) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, rgb(30 64 175 / 0.10) 0px, transparent 50%),
+      radial-gradient(at 0% 80%, rgb(79 70 229 / 0.08) 0px, transparent 50%);
+  }
+
+  .bg-mesh-organiser {
+    background-image:
+      radial-gradient(at 40% 20%, rgb(249 115 22 / 0.08) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, rgb(234 88 12 / 0.06) 0px, transparent 50%),
+      radial-gradient(at 0% 80%, rgb(251 146 60 / 0.05) 0px, transparent 50%);
+  }
+
+  :is(.dark .bg-mesh-organiser) {
+    background-image:
+      radial-gradient(at 40% 20%, rgb(249 115 22 / 0.12) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, rgb(234 88 12 / 0.10) 0px, transparent 50%),
+      radial-gradient(at 0% 80%, rgb(251 146 60 / 0.08) 0px, transparent 50%);
+  }
+
+  .bg-mesh-admin {
+    background-image:
+      radial-gradient(at 40% 20%, rgb(185 28 28 / 0.06) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, rgb(225 29 72 / 0.05) 0px, transparent 50%),
+      radial-gradient(at 0% 80%, rgb(248 113 113 / 0.04) 0px, transparent 50%);
+  }
+
+  :is(.dark .bg-mesh-admin) {
+    background-image:
+      radial-gradient(at 40% 20%, rgb(185 28 28 / 0.12) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, rgb(225 29 72 / 0.08) 0px, transparent 50%),
+      radial-gradient(at 0% 80%, rgb(248 113 113 / 0.06) 0px, transparent 50%);
+  }
+
+  /* Dot pattern background */
+  .bg-dots {
+    background-image: radial-gradient(circle, rgb(148 163 184 / 0.15) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  /* Abstract geometric pattern overlay */
+  .bg-abstract {
+    background-image:
+      linear-gradient(30deg, rgb(185 28 28 / 0.03) 12%, transparent 12.5%, transparent 87%, rgb(185 28 28 / 0.03) 87.5%, rgb(185 28 28 / 0.03)),
+      linear-gradient(150deg, rgb(185 28 28 / 0.03) 12%, transparent 12.5%, transparent 87%, rgb(185 28 28 / 0.03) 87.5%, rgb(185 28 28 / 0.03)),
+      linear-gradient(30deg, rgb(185 28 28 / 0.03) 12%, transparent 12.5%, transparent 87%, rgb(185 28 28 / 0.03) 87.5%, rgb(185 28 28 / 0.03)),
+      linear-gradient(150deg, rgb(185 28 28 / 0.03) 12%, transparent 12.5%, transparent 87%, rgb(185 28 28 / 0.03) 87.5%, rgb(185 28 28 / 0.03)),
+      linear-gradient(60deg, rgb(225 29 72 / 0.04) 25%, transparent 25.5%, transparent 75%, rgb(225 29 72 / 0.04) 75%, rgb(225 29 72 / 0.04)),
+      linear-gradient(60deg, rgb(225 29 72 / 0.04) 25%, transparent 25.5%, transparent 75%, rgb(225 29 72 / 0.04) 75%, rgb(225 29 72 / 0.04));
+    background-size: 80px 140px;
+    background-position: 0 0, 0 0, 40px 70px, 40px 70px, 0 0, 40px 70px;
+  }
+
+  :is(.dark .bg-abstract) {
+    background-image:
+      linear-gradient(30deg, rgb(185 28 28 / 0.06) 12%, transparent 12.5%, transparent 87%, rgb(185 28 28 / 0.06) 87.5%, rgb(185 28 28 / 0.06)),
+      linear-gradient(150deg, rgb(185 28 28 / 0.06) 12%, transparent 12.5%, transparent 87%, rgb(185 28 28 / 0.06) 87.5%, rgb(185 28 28 / 0.06)),
+      linear-gradient(30deg, rgb(185 28 28 / 0.06) 12%, transparent 12.5%, transparent 87%, rgb(185 28 28 / 0.06) 87.5%, rgb(185 28 28 / 0.06)),
+      linear-gradient(150deg, rgb(185 28 28 / 0.06) 12%, transparent 12.5%, transparent 87%, rgb(185 28 28 / 0.06) 87.5%, rgb(185 28 28 / 0.06)),
+      linear-gradient(60deg, rgb(225 29 72 / 0.07) 25%, transparent 25.5%, transparent 75%, rgb(225 29 72 / 0.07) 75%, rgb(225 29 72 / 0.07)),
+      linear-gradient(60deg, rgb(225 29 72 / 0.07) 25%, transparent 25.5%, transparent 75%, rgb(225 29 72 / 0.07) 75%, rgb(225 29 72 / 0.07));
+    background-size: 80px 140px;
+    background-position: 0 0, 0 0, 40px 70px, 40px 70px, 0 0, 40px 70px;
+  }
+
+  /* Abstract diagonal lines pattern */
+  .bg-lines {
+    background-image:
+      repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 40px,
+        rgb(185 28 28 / 0.02) 40px,
+        rgb(185 28 28 / 0.02) 41px
+      );
+  }
+
+  :is(.dark .bg-lines) {
+    background-image:
+      repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 40px,
+        rgb(248 113 113 / 0.04) 40px,
+        rgb(248 113 113 / 0.04) 41px
+      );
+  }
+
+  :is(.dark .bg-dots) {
+    background-image: radial-gradient(circle, rgb(148 163 184 / 0.08) 1px, transparent 1px);
+  }
+
+  /* Tab bar with frosted glass */
+  .tab-bar-glass {
+    @apply bg-white/80 backdrop-blur-lg border-t border-white/20
+           dark:bg-slate-900/80 dark:border-slate-800/50;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scroll-stable {
+    scrollbar-gutter: stable;
+  }
+
+  /* Skeleton shimmer effect */
+  .skeleton {
+    @apply relative overflow-hidden bg-slate-100 rounded-xl dark:bg-slate-800;
+  }
+
+  .skeleton::after {
+    content: '';
+    @apply absolute inset-0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(255 255 255 / 0.4),
+      transparent
+    );
+    animation: shimmer 2s linear infinite;
+  }
+
+  :is(.dark .skeleton)::after {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(255 255 255 / 0.05),
+      transparent
+    );
+  }
+}
