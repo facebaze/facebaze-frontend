@@ -458,12 +458,31 @@ export default function FaceCapturePage() {
       nextStep()
       router.push('/onboarding/quick-profile')
     } catch (err: any) {
+      const status = err?.response?.status
       const msg = err?.response?.data?.message
-      setError(
-        msg?.includes('already registered') ? 'This face is already registered to another account.'
-          : msg?.includes('quality') ? 'Photo quality too low. Try better lighting.'
-            : 'Upload failed. Please try again.',
-      )
+      let errorMsg: string
+      if (status === 413) {
+        errorMsg = 'Photo file is too large. Try moving closer to the camera.'
+      } else if (status === 404) {
+        errorMsg = 'Account setup incomplete. Please go back and try again.'
+      } else if (status === 422) {
+        errorMsg = msg || 'Photo quality too low. Try better lighting.'
+      } else if (status === 409) {
+        errorMsg = 'Face already registered. Proceeding to next step.'
+        // Face is already registered — treat as success
+        setFaceCapture(capturedImage)
+        markFaceCaptured()
+        nextStep()
+        router.push('/onboarding/quick-profile')
+        return
+      } else if (status === 400) {
+        errorMsg = msg || 'Invalid image data. Please retake the photo.'
+      } else if (!err?.response) {
+        errorMsg = 'Network error. Check your connection and try again.'
+      } else {
+        errorMsg = 'Upload failed. Please try again.'
+      }
+      setError(errorMsg)
       setState('error')
     }
   }

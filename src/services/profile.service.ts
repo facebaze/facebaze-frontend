@@ -49,7 +49,8 @@ export const profileService = {
   async uploadFaceCapture(payload: FaceCapturePayload): Promise<FaceCaptureResponse> {
     const { data } = await apiClient.post<FaceCaptureResponse>(
       '/profiles/face-capture',
-      payload
+      payload,
+      { timeout: 30_000 } // Longer timeout for large base64 image upload
     )
     return data
   },
