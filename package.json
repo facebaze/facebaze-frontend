@@ -4,14 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev --port 3000",
-    "build": "next build",
+    "build": "node scripts/stamp-sw.js && next build",
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "cap:sync": "cap sync",
     "cap:ios": "cap open ios",
     "cap:android": "cap open android",
-    "build:mobile": "next build && cap sync"
+    "build:mobile": "node scripts/stamp-sw.js && next build && cap sync"
   },
   "dependencies": {
     "@capacitor/camera": "^6.0.2",

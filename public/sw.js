@@ -1,6 +1,6 @@
 // FaceBase PWA Service Worker
-// Cache versioning — bump CACHE_VERSION to bust all caches on deploy
-const CACHE_VERSION = 'v1';
+// mozjnrpb is replaced at build time by scripts/stamp-sw.js on every deploy
+const CACHE_VERSION = '__BUILD_ID__';
 const STATIC_CACHE = `facebase-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `facebase-runtime-${CACHE_VERSION}`;
 const IMAGE_CACHE = `facebase-images-${CACHE_VERSION}`;
@@ -26,7 +26,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// ── Activate: clean old caches ────────────────────────────────────────────────
+// ── Activate: clean old caches + tell all clients to reload ───────────────────
 self.addEventListener('activate', (event) => {
   const currentCaches = [STATIC_CACHE, RUNTIME_CACHE, IMAGE_CACHE];
   event.waitUntil(
@@ -39,6 +39,14 @@ self.addEventListener('activate', (event) => {
         )
       )
       .then(() => self.clients.claim())
+      .then(() => {
+        // Notify all open tabs/windows to reload with the new version
+        return self.clients.matchAll({ type: 'window' }).then((clients) => {
+          clients.forEach((client) => {
+            client.postMessage({ type: 'SW_UPDATED', version: CACHE_VERSION });
+          });
+        });
+      })
   );
 });
 

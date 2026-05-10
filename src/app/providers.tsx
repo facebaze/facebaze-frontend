@@ -46,12 +46,38 @@ export function Providers({ children }: ProvidersProps) {
       initOnboarding()
       initTheme()
 
-      // Register service worker for PWA
+      // Register service worker for PWA with auto-update
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js').then((reg) => {
-          // Check for updates periodically (every 30 min)
-          setInterval(() => reg.update(), 30 * 60 * 1000)
+          // Check for SW updates every 60 seconds
+          setInterval(() => reg.update(), 60 * 1000)
+
+          // Also check on visibility change (user returns to tab/app)
+          document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+              reg.update()
+            }
+          })
         }).catch(() => {})
+
+        // Listen for the SW_UPDATED message from new service worker
+        navigator.serviceWorker.addEventListener('message', (event) => {
+          if (event.data?.type === 'SW_UPDATED') {
+            // New deployment detected — reload to get latest version
+            // Small delay to let the new SW fully activate
+            setTimeout(() => {
+              window.location.reload()
+            }, 300)
+          }
+        })
+
+        // Also handle the controlling SW changing (covers edge cases)
+        let refreshing = false
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (refreshing) return
+          refreshing = true
+          window.location.reload()
+        })
       }
     }
   }, [initialize, initOnboarding, initTheme])
