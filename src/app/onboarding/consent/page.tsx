@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { IconShield, IconBell, IconEye, IconLock, IconArrowRight } from '@tabler/icons-react'
@@ -36,29 +36,10 @@ export default function ConsentPage() {
   const router = useRouter()
   const { markConsentAgreed, nextStep } = useOnboardingStore()
   const [agreed, setAgreed] = useState(false)
-  const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const scrollRef = useRef<HTMLDivElement>(null)
-
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget
-    if (scrollTop + clientHeight >= scrollHeight - 30) {
-      setHasScrolledToBottom(true)
-    }
-  }, [])
-
-  // If content doesn't overflow, auto-mark as scrolled to bottom
-  useEffect(() => {
-    const el = scrollRef.current
-    if (el && el.scrollHeight <= el.clientHeight + 30) {
-      setHasScrolledToBottom(true)
-    }
-  }, [])
-
-  const canProceed = hasScrolledToBottom && agreed
 
   const handleContinue = async () => {
-    if (!canProceed) return
+    if (!agreed) return
     setIsSubmitting(true)
 
     try {
@@ -102,10 +83,7 @@ export default function ConsentPage() {
 
         {/* Scrollable consent content */}
         <div
-          ref={scrollRef}
-          onScroll={handleScroll}
           className="flex-1 overflow-y-auto -mx-2 px-2 pb-4"
-          style={{ maxHeight: 'calc(100dvh - 360px)' }}
         >
           {/* Key points */}
           <div className="space-y-4 mb-6">
@@ -163,15 +141,6 @@ export default function ConsentPage() {
           </div>
         </div>
 
-        {/* Scroll hint */}
-        {!hasScrolledToBottom && (
-          <div className="text-center py-2">
-            <p className="text-tiny text-slate-400 animate-pulse-soft">
-              ↓ Scroll down to read all terms
-            </p>
-          </div>
-        )}
-
         {/* Agreement + CTA */}
         <div className="pt-4 pb-2 space-y-4 border-t border-slate-100 dark:border-slate-800 mt-auto">
           <Checkbox
@@ -188,7 +157,7 @@ export default function ConsentPage() {
 
           <Button
             onClick={handleContinue}
-            disabled={!canProceed}
+            disabled={!agreed}
             loading={isSubmitting}
             iconRight={<IconArrowRight size={18} stroke={1.5} />}
           >

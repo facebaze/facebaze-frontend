@@ -2,10 +2,17 @@
 
 import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
+import { motion } from 'framer-motion'
+import { IconArrowLeft, IconCheck } from '@tabler/icons-react'
 import { useAuthStore } from '@/stores/auth.store'
 import { useOnboardingStore } from '@/stores/onboarding.store'
 
-const STEP_LABELS = ['Consent', 'Face', 'Profile', 'Permissions']
+const STEPS = [
+  { key: 'consent', label: 'Consent', description: 'Review data policy' },
+  { key: 'face-capture', label: 'Face Setup', description: 'Register your face' },
+  { key: 'quick-profile', label: 'Profile', description: 'Your info' },
+  { key: 'permission-mode', label: 'Permissions', description: 'Scan preferences' },
+]
 
 /**
  * Onboarding layout — progress stepper, requires authentication.
@@ -17,7 +24,7 @@ export default function OnboardingLayout({
 }) {
   const router = useRouter()
   const { isAuthenticated, isInitialized, user } = useAuthStore()
-  const { stepIndex, totalSteps, currentStep } = useOnboardingStore()
+  const { stepIndex, currentStep } = useOnboardingStore()
   const pathname = usePathname()
 
   // Derive step from URL for accurate visual display
@@ -54,9 +61,7 @@ export default function OnboardingLayout({
   // Don't show stepper on completion page
   if (isCompletePage) {
     return (
-      <main className="flex-1 flex flex-col h-full bg-surface-primary dark:bg-slate-950 bg-mesh safe-padding relative overflow-hidden">
-        <div className="absolute inset-0 bg-abstract opacity-40 pointer-events-none" />
-        <div className="absolute inset-0 bg-lines pointer-events-none" />
+      <main className="flex-1 flex flex-col h-full bg-white dark:bg-slate-950">
         <div className="flex-1 flex flex-col px-6 pb-safe-bottom">
           {children}
         </div>
@@ -64,78 +69,84 @@ export default function OnboardingLayout({
     )
   }
 
+  const progress = ((displayStepIndex + 1) / STEPS.length) * 100
+  const canGoBack = displayStepIndex > 0
+
+  const handleBack = () => {
+    if (!canGoBack) return
+    const prevStep = STEPS[displayStepIndex - 1]
+    if (prevStep) {
+      router.push(`/onboarding/${prevStep.key}`)
+    }
+  }
+
   return (
-    <main className="flex-1 flex flex-col h-full bg-surface-primary dark:bg-slate-950 bg-mesh safe-padding relative overflow-hidden">
-      <div className="absolute inset-0 bg-abstract opacity-40 pointer-events-none" />
-      <div className="absolute inset-0 bg-lines pointer-events-none" />
-      {/* Stepper */}
-      <div className="pt-safe-top px-8 pt-16 pb-6">
-        {/* Step counter */}
-        <p className="text-center text-xs font-medium text-white/70 mb-4 tracking-wide">
-          STEP {displayStepIndex + 1} OF {totalSteps}
-        </p>
-        <div className="flex items-center justify-between">
-          {STEP_LABELS.map((label, i) => {
-            const isCompleted = i < displayStepIndex
-            const isActive = i === displayStepIndex
-            return (
-              <div key={label} className="flex flex-col items-center flex-1">
-                {/* Connector + Circle row */}
-                <div className="flex items-center w-full">
-                  {/* Left connector */}
-                  {i > 0 && (
-                    <div
-                      className={`h-[3px] flex-1 rounded-full transition-all duration-500 ${
-                        i <= displayStepIndex ? 'bg-white' : 'bg-white/20'
-                      }`}
-                    />
-                  )}
+    <main className="flex-1 flex flex-col h-full bg-white dark:bg-slate-950">
+      {/* Stepper Header */}
+      <div className="pt-safe-top px-5 pt-4 pb-3 bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800">
+        {/* Progress bar */}
+        <div className="h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-4">
+          <motion.div
+            className="h-full rounded-full"
+            style={{ background: 'linear-gradient(90deg, #b91c1c, #e11d48)' }}
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
+          />
+        </div>
 
-                  {/* Circle */}
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 transition-all duration-500 ${
-                      isCompleted
-                        ? 'bg-white text-brand-600 shadow-lg shadow-white/25'
-                        : isActive
-                          ? 'bg-white text-brand-600 ring-4 ring-white/30 shadow-lg shadow-white/25 scale-110'
-                          : 'bg-white/15 text-white/50 backdrop-blur-sm'
-                    }`}
-                  >
-                    {isCompleted ? (
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                    ) : (
-                      i + 1
-                    )}
-                  </div>
+        {/* Back button + Step info + Step dots */}
+        <div className="flex items-center gap-3">
+          {canGoBack ? (
+            <button
+              onClick={handleBack}
+              className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors -ml-1"
+              aria-label="Go back"
+            >
+              <IconArrowLeft size={18} className="text-slate-600 dark:text-slate-400" stroke={1.5} />
+            </button>
+          ) : (
+            <div className="w-9" />
+          )}
 
-                  {/* Right connector */}
-                  {i < STEP_LABELS.length - 1 && (
-                    <div
-                      className={`h-[3px] flex-1 rounded-full transition-all duration-500 ${
-                        i < displayStepIndex ? 'bg-white' : 'bg-white/20'
-                      }`}
-                    />
-                  )}
-                </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-widest uppercase">
+              Step {displayStepIndex + 1} of {STEPS.length}
+            </p>
+            <h2 className="text-caption font-bold text-slate-900 dark:text-white truncate">
+              {STEPS[displayStepIndex]?.label}
+            </h2>
+          </div>
 
-                {/* Label */}
-                <span
-                  className={`text-[11px] mt-2 font-semibold tracking-wide transition-all duration-500 ${
-                    isActive ? 'text-white' : isCompleted ? 'text-white/80' : 'text-white/40'
+          {/* Compact step dots */}
+          <div className="flex items-center gap-1.5">
+            {STEPS.map((step, i) => {
+              const isCompleted = i < displayStepIndex
+              const isActive = i === displayStepIndex
+              return (
+                <div
+                  key={step.key}
+                  className={`rounded-full transition-all duration-500 ${
+                    isCompleted
+                      ? 'w-5 h-5 bg-brand-600 flex items-center justify-center'
+                      : isActive
+                        ? 'w-5 h-5 bg-brand-600 ring-2 ring-brand-200 dark:ring-brand-900 flex items-center justify-center'
+                        : 'w-2 h-2 bg-slate-200 dark:bg-slate-700'
                   }`}
                 >
-                  {label}
-                </span>
-              </div>
-            )
-          })}
+                  {isCompleted && <IconCheck size={12} className="text-white" strokeWidth={3} />}
+                  {isActive && (
+                    <span className="text-[9px] font-bold text-white">{i + 1}</span>
+                  )}
+                </div>
+              )
+            })}
+          </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col px-6 pb-safe-bottom">
+      <div className="flex-1 flex flex-col px-6 pb-safe-bottom overflow-y-auto">
         {children}
       </div>
     </main>

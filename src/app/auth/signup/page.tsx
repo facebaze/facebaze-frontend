@@ -150,6 +150,16 @@ export default function SignupPage() {
           <div className="text-center pt-1">
             <button
               type="button"
+              onClick={() => router.push('/auth/phone')}
+              className="text-caption text-slate-500 dark:text-slate-400"
+            >
+              Prefer phone?{' '}
+              <span className="font-semibold text-brand-600">Sign up with phone number</span>
+            </button>
+          </div>
+          <div className="text-center pt-1">
+            <button
+              type="button"
               onClick={() => router.push('/auth/login')}
               className="text-caption text-slate-500 dark:text-slate-400"
             >

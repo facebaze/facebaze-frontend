@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { useAuthStore } from '@/stores/auth.store'
-import { IconScan, IconArrowRight, IconUsers, IconBuildingStore, IconShieldCheck, IconBolt, IconDeviceMobile } from '@tabler/icons-react'
+import { IconScan, IconArrowRight, IconUsers, IconBuildingStore, IconShieldCheck, IconBolt, IconDeviceMobile, IconPhone, IconMail } from '@tabler/icons-react'
 
 export default function WelcomePage() {
   const router = useRouter()
@@ -85,20 +85,39 @@ export default function WelcomePage() {
             I want to
           </p>
 
-          {/* Attendee card */}
+          {/* Attendee — Phone (primary) */}
           <button
-            onClick={() => router.push('/auth/signup')}
+            onClick={() => router.push('/auth/phone')}
             className="w-full flex items-center gap-4 p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm active:scale-[0.98] transition-transform text-left"
           >
             <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center shrink-0">
-              <IconUsers size={22} className="text-blue-600 dark:text-blue-400" stroke={1.5} />
+              <IconPhone size={22} className="text-blue-600 dark:text-blue-400" stroke={1.5} />
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-caption font-bold text-slate-900 dark:text-white">
                 Attend Events
               </h3>
               <p className="text-tiny text-slate-500 dark:text-slate-400 mt-0.5">
-                Discover events, scan faces, exchange contacts instantly
+                Sign up with your phone number — quick &amp; easy
+              </p>
+            </div>
+            <IconArrowRight size={18} className="text-slate-400 shrink-0" />
+          </button>
+
+          {/* Attendee — Email (secondary) */}
+          <button
+            onClick={() => router.push('/auth/signup')}
+            className="w-full flex items-center gap-4 p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm active:scale-[0.98] transition-transform text-left"
+          >
+            <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 flex items-center justify-center shrink-0">
+              <IconMail size={22} className="text-emerald-600 dark:text-emerald-400" stroke={1.5} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-caption font-bold text-slate-900 dark:text-white">
+                Sign up with Email
+              </h3>
+              <p className="text-tiny text-slate-500 dark:text-slate-400 mt-0.5">
+                Create an account with email &amp; password
               </p>
             </div>
             <IconArrowRight size={18} className="text-slate-400 shrink-0" />
