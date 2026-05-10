@@ -125,14 +125,23 @@ export default function FaceCapturePage() {
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [uploadProgress, setUploadProgress] = useState(0)
+  const [countdown, setCountdown] = useState<number | null>(null)
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const faceCheckRef = useRef(false)
+  const consecutiveDetections = useRef(0)
+  const consecutiveLosses = useRef(0)
   const livenessTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const detectionCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const stateRef = useRef(state)
+
+  // Minimum consecutive positive detections before advancing
+  const MIN_CONSECUTIVE_DETECTIONS = 3
+  // Minimum consecutive losses before reverting state
+  const MIN_CONSECUTIVE_LOSSES = 2
 
   // Keep stateRef in sync for use inside interval callbacks
   useEffect(() => { stateRef.current = state }, [state])
@@ -191,6 +200,7 @@ export default function FaceCapturePage() {
     const data = imageData.data
     const totalSampled = Math.floor((w * h) / 2)
     let skinCount = 0
+    let edgeCount = 0
     for (let i = 0; i < data.length; i += 8) {
       const r = data[i], g = data[i + 1], b = data[i + 2]
       // YCbCr skin-tone detection (reliable across ethnicities)
@@ -198,7 +208,21 @@ export default function FaceCapturePage() {
       const cr = 128 + 0.5 * r - 0.419 * g - 0.081 * b
       if (cb >= 77 && cb <= 127 && cr >= 133 && cr <= 173) skinCount++
     }
-    return skinCount / totalSampled > 0.12
+    // Also check for edges/contrast variation (faces have texture, flat surfaces don't)
+    for (let y = 1; y < h - 1; y += 2) {
+      for (let x = 1; x < w - 1; x += 2) {
+        const idx = (y * w + x) * 4
+        const idxRight = (y * w + x + 1) * 4
+        const idxDown = ((y + 1) * w + x) * 4
+        const gx = Math.abs(data[idx] - data[idxRight]) + Math.abs(data[idx + 1] - data[idxRight + 1])
+        const gy = Math.abs(data[idx] - data[idxDown]) + Math.abs(data[idx + 1] - data[idxDown + 1])
+        if (gx + gy > 30) edgeCount++
+      }
+    }
+    const edgeSamples = Math.floor((w / 2) * (h / 2))
+    const hasTexture = edgeCount / edgeSamples > 0.08
+    // Require both sufficient skin pixels AND texture (faces aren't flat)
+    return skinCount / totalSampled > 0.20 && hasTexture
   }, [])
 
   // Continuous detection loop — runs whenever camera is active
@@ -236,36 +260,55 @@ export default function FaceCapturePage() {
       }
 
       if (!active) return
-      faceCheckRef.current = detected
       const currentState = stateRef.current
 
       if (detected) {
-        setFaceStatus(prev => {
-          if (prev.detected && prev.aligned) return prev
-          return { ...prev, detected: true, aligned: true, lighting: 'good' }
-        })
-        if (currentState === 'positioning') {
-          setState('liveness')
+        consecutiveDetections.current++
+        consecutiveLosses.current = 0
+        const stable = consecutiveDetections.current >= MIN_CONSECUTIVE_DETECTIONS
+        faceCheckRef.current = stable
+
+        if (stable) {
+          setFaceStatus(prev => {
+            if (prev.detected && prev.aligned) return prev
+            return { ...prev, detected: true, aligned: true, lighting: 'good' }
+          })
+          if (currentState === 'positioning') {
+            setState('liveness')
+          }
         }
       } else {
-        setFaceStatus(prev => {
-          if (!prev.detected) return prev
-          return { ...prev, detected: false, aligned: false }
-        })
-        // Face lost — revert from ready/liveness back to positioning
-        if (currentState === 'ready' || currentState === 'liveness') {
-          if (livenessTimerRef.current) {
-            clearTimeout(livenessTimerRef.current)
-            livenessTimerRef.current = null
+        consecutiveLosses.current++
+        consecutiveDetections.current = 0
+
+        if (consecutiveLosses.current >= MIN_CONSECUTIVE_LOSSES) {
+          faceCheckRef.current = false
+          setFaceStatus(prev => {
+            if (!prev.detected) return prev
+            return { ...prev, detected: false, aligned: false }
+          })
+          // Face lost — revert from ready/liveness back to positioning
+          if (currentState === 'ready' || currentState === 'liveness') {
+            if (livenessTimerRef.current) {
+              clearTimeout(livenessTimerRef.current)
+              livenessTimerRef.current = null
+            }
+            // Cancel any active countdown
+            if (countdownRef.current) {
+              clearInterval(countdownRef.current)
+              countdownRef.current = null
+            }
+            setCountdown(null)
+            setState('positioning')
+            setFaceStatus(prev => ({ ...prev, blinkDetected: false }))
           }
-          setState('positioning')
-          setFaceStatus(prev => ({ ...prev, blinkDetected: false }))
         }
       }
     }
 
-    const interval = setInterval(runDetection, 500)
-    const initialDelay = setTimeout(runDetection, 800)
+    // Run detection every 300ms for more responsive tracking
+    const interval = setInterval(runDetection, 300)
+    const initialDelay = setTimeout(runDetection, 500)
 
     return () => {
       active = false
@@ -300,7 +343,14 @@ export default function FaceCapturePage() {
 
   // ─── Capture ────────────────────────────────────────────────────────────────
   const handleCapture = useCallback(() => {
-    if (!videoRef.current || !canvasRef.current || !faceCheckRef.current) return
+    if (!videoRef.current || !canvasRef.current) return
+    // Final real-time face check right before capture
+    if (!faceCheckRef.current) {
+      setState('positioning')
+      setFaceStatus(prev => ({ ...prev, detected: false, aligned: false, blinkDetected: false }))
+      consecutiveDetections.current = 0
+      return
+    }
     const video = videoRef.current
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
@@ -311,10 +361,83 @@ export default function FaceCapturePage() {
     ctx.scale(-1, 1)
     ctx.drawImage(video, 0, 0)
     const base64 = canvas.toDataURL('image/jpeg', 0.85)
+
+    // Post-capture face verification — analyze the captured image
+    const verifyCanvas = document.createElement('canvas')
+    const verifyCtx = verifyCanvas.getContext('2d', { willReadFrequently: true })
+    if (verifyCtx) {
+      const vw = 80, vh = 100
+      verifyCanvas.width = vw
+      verifyCanvas.height = vh
+      // Sample center region of the captured frame
+      verifyCtx.drawImage(canvas, canvas.width * 0.2, canvas.height * 0.1, canvas.width * 0.6, canvas.height * 0.65, 0, 0, vw, vh)
+      const imageData = verifyCtx.getImageData(0, 0, vw, vh)
+      const data = imageData.data
+      const totalSampled = Math.floor((vw * vh) / 2)
+      let skinCount = 0
+      for (let i = 0; i < data.length; i += 8) {
+        const r = data[i], g = data[i + 1], b = data[i + 2]
+        const cb = 128 - 0.169 * r - 0.331 * g + 0.5 * b
+        const cr = 128 + 0.5 * r - 0.419 * g - 0.081 * b
+        if (cb >= 77 && cb <= 127 && cr >= 133 && cr <= 173) skinCount++
+      }
+      if (skinCount / totalSampled < 0.15) {
+        // No face found in captured image — don't accept it
+        setError('No face detected in the photo. Please position your face in the oval and try again.')
+        setState('error')
+        streamRef.current?.getTracks().forEach((t) => t.stop())
+        return
+      }
+    }
+
     setCapturedImage(base64)
     setState('captured')
     streamRef.current?.getTracks().forEach((t) => t.stop())
   }, [])
+
+  // Auto-capture countdown — when state becomes 'ready', start a 3s countdown
+  useEffect(() => {
+    if (state !== 'ready') {
+      // Cancel countdown if state leaves ready
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current)
+        countdownRef.current = null
+      }
+      setCountdown(null)
+      return
+    }
+
+    let count = 3
+    setCountdown(count)
+
+    countdownRef.current = setInterval(() => {
+      count--
+      if (count <= 0) {
+        if (countdownRef.current) {
+          clearInterval(countdownRef.current)
+          countdownRef.current = null
+        }
+        setCountdown(null)
+        // Auto-capture only if face is still present
+        if (faceCheckRef.current) {
+          handleCapture()
+        } else {
+          setState('positioning')
+          setFaceStatus(prev => ({ ...prev, detected: false, aligned: false, blinkDetected: false }))
+          consecutiveDetections.current = 0
+        }
+      } else {
+        setCountdown(count)
+      }
+    }, 1000)
+
+    return () => {
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current)
+        countdownRef.current = null
+      }
+    }
+  }, [state, handleCapture])
 
   // ─── Upload ─────────────────────────────────────────────────────────────────
   const handleConfirm = async () => {
@@ -348,11 +471,18 @@ export default function FaceCapturePage() {
   const handleRetry = () => {
     setCapturedImage(null)
     setError(null)
+    setCountdown(null)
     setFaceStatus({ detected: false, aligned: false, lighting: 'good', blinkDetected: false })
     faceCheckRef.current = false
+    consecutiveDetections.current = 0
+    consecutiveLosses.current = 0
     if (livenessTimerRef.current) {
       clearTimeout(livenessTimerRef.current)
       livenessTimerRef.current = null
+    }
+    if (countdownRef.current) {
+      clearInterval(countdownRef.current)
+      countdownRef.current = null
     }
     initCamera()
   }
@@ -367,7 +497,7 @@ export default function FaceCapturePage() {
     state === 'initializing' ? 'INITIALIZING' :
     state === 'positioning' ? 'SCANNING FACE' :
     state === 'liveness' ? 'VERIFYING LIVENESS' :
-    state === 'ready' ? 'READY TO CAPTURE' :
+    state === 'ready' ? (countdown !== null ? `CAPTURING IN ${countdown}…` : 'READY TO CAPTURE') :
     state === 'captured' ? 'FACE CAPTURED' :
     state === 'uploading' ? `ENCRYPTING · ${uploadProgress}%` :
     'ERROR'
@@ -487,6 +617,22 @@ export default function FaceCapturePage() {
 
                 {/* Scan line */}
                 {isScanning && <ScanLine />}
+
+                {/* Countdown overlay */}
+                {state === 'ready' && countdown !== null && (
+                  <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                    <motion.div
+                      key={countdown}
+                      initial={{ scale: 0.5, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 1.5, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center"
+                    >
+                      <span className="text-4xl font-bold text-white drop-shadow-lg">{countdown}</span>
+                    </motion.div>
+                  </div>
+                )}
               </>
             )}
 
@@ -594,9 +740,15 @@ export default function FaceCapturePage() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+              className="space-y-2"
             >
+              {countdown !== null && (
+                <p className="text-center text-sm font-semibold text-brand-600 dark:text-brand-400">
+                  Auto-capturing in {countdown}s — hold still
+                </p>
+              )}
               <Button onClick={handleCapture} disabled={!faceStatus.detected} icon={<IconCamera size={20} />}>
-                {faceStatus.detected ? 'Capture Photo' : 'Position your face'}
+                Capture Now
               </Button>
             </motion.div>
           )}
