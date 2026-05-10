@@ -66,7 +66,7 @@ export default function RootPage() {
 
   // Splash screen while determining state
   return (
-    <div className="flex-1 flex items-center justify-center bg-brand-950 min-h-screen">
+    <div className="flex-1 flex items-center justify-center bg-brand-950 h-full">
       <div className="animate-pulse-soft">
         <svg
           width="64"

@@ -50,7 +50,7 @@ export default function MainLayout({
   const activeTab = TABS.find((t) => pathname.startsWith(t.href))?.id ?? 'home'
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 dark:from-slate-800 dark:via-slate-800/90 dark:to-slate-700">
+    <div className="flex flex-col h-full bg-gradient-to-b from-slate-50 via-white to-slate-100 dark:from-slate-800 dark:via-slate-800/90 dark:to-slate-700">
       {/* Page content */}
       <div className="flex-1 overflow-y-auto pb-[calc(5.5rem+env(safe-area-inset-bottom))] isolate" style={{ zIndex: 0 }}>
         {children}

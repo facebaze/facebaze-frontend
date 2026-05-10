@@ -162,7 +162,7 @@ export default function VendorDashboardPage() {
 
       <div className="px-5 -mt-2 space-y-5 pb-8">
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
           {statCards.map((card) => (
             <div
               key={card.label}
@@ -430,7 +430,7 @@ export default function VendorDashboardPage() {
             </ChartCard>
 
             {/* Bottom row: grade donut + consent bar */}
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {allGrades.length > 0 && (
                 <ChartCard
                   title="Lead Quality"

@@ -2,7 +2,7 @@
 
 export function LoadingScreen() {
   return (
-    <div className="flex-1 flex items-center justify-center min-h-screen bg-surface-secondary bg-mesh">
+    <div className="flex-1 flex items-center justify-center h-full bg-surface-secondary bg-mesh">
       <div className="flex flex-col items-center gap-4">
         {/* Animated logo ring */}
         <div className="relative w-16 h-16">

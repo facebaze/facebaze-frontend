@@ -5,10 +5,17 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'FaceBase',
   description: 'Your face is your business card',
+  manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
     title: 'FaceBase',
+  },
+  other: {
+    'mobile-web-app-capable': 'yes',
+    'application-name': 'FaceBase',
+    'msapplication-TileColor': '#3b0a0a',
+    'msapplication-tap-highlight': 'no',
   },
 }
 
@@ -18,7 +25,10 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
-  themeColor: '#3b0a0a',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#3b0a0a' },
+    { media: '(prefers-color-scheme: dark)', color: '#0f0f14' },
+  ],
 }
 
 export default function RootLayout({
@@ -50,6 +60,12 @@ export default function RootLayout({
         />
         <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
         <meta httpEquiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+        {/* PWA: Apple touch icon + multiple sizes */}
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
+        <link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144x144.png" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png" />
+        <link rel="icon" type="image/png" sizes="96x96" href="/icons/icon-96x96.png" />
         {/* Prevent flash of wrong theme */}
         <script
           dangerouslySetInnerHTML={{

@@ -23,7 +23,7 @@ export default function AuthLayout({
   }, [isAuthenticated, isInitialized, router])
 
   return (
-    <main className="flex-1 flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 relative">
+    <main className="flex-1 flex flex-col h-full bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 relative overflow-hidden">
       <div className="absolute inset-0 opacity-30 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-brand-200/40 via-transparent to-transparent dark:from-brand-900/20" />
       <div className="relative flex-1 flex flex-col overflow-y-auto">{children}</div>
     </main>

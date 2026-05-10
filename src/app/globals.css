@@ -22,6 +22,7 @@
   * {
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
+    box-sizing: border-box;
   }
 
   html {
@@ -29,6 +30,9 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overscroll-behavior: none;
+    /* Prevent text size adjustment on orientation change */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
   body {
@@ -40,6 +44,15 @@
     position: fixed;
     width: 100%;
     overflow: hidden;
+    /* Prevent long-press context menu on mobile */
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Allow text selection only in inputs & text areas */
+  input, textarea, [contenteditable] {
+    -webkit-user-select: text;
+    user-select: text;
   }
 
   #__next {
@@ -57,6 +70,42 @@
   /* Disable pull-to-refresh */
   html, body {
     overscroll-behavior-y: contain;
+  }
+
+  /* PWA standalone mode — extra safe area handling */
+  @media (display-mode: standalone) {
+    body {
+      /* Extra top padding in standalone to account for status bar */
+      padding-top: max(var(--safe-area-top), 20px);
+    }
+  }
+
+  /* iOS standalone: hide Safari bottom bar area */
+  @supports (-webkit-touch-callout: none) {
+    body {
+      min-height: -webkit-fill-available;
+    }
+  }
+
+  /* Smooth scrolling for in-page navigation */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  /* Better focus styles for accessibility */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-500;
+  }
+
+  /* Hide scrollbars but allow scrolling (mobile feel) */
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 }
 

@@ -99,6 +99,19 @@ export interface SystemHealth {
   uptime: number
 }
 
+export interface PlatformAnalytics {
+  userRoles: { name: string; value: number }[]
+  vendorStatus: { name: string; value: number }[]
+  eventStatuses: { name: string; value: number }[]
+  dailyScans: { date: string; scans: number; leads: number }[]
+  topEvents: { eventId: string; eventName: string; totalScans: number; leads: number }[]
+  topVendors: { vendorId: string; vendorName: string; totalScans: number; leads: number; eventsCount: number }[]
+  totalVendors: number
+  consentRate: number
+  totalScans: number
+  totalConsented: number
+}
+
 /* ────────── Service ────────── */
 
 export const adminService = {
@@ -202,4 +215,7 @@ export const adminService = {
 
   /* System Health */
   getSystemHealth: () => api.get<SystemHealth>('/admin/system/health').then((r) => r.data),
+
+  /* Platform Analytics */
+  getPlatformAnalytics: () => api.get<PlatformAnalytics>('/admin/analytics').then((r) => r.data),
 }

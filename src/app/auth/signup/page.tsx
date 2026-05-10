@@ -66,7 +66,7 @@ export default function SignupPage() {
         <IconArrowLeft size={20} className="text-slate-700 dark:text-slate-300" stroke={1.5} />
       </button>
 
-      <div className="mt-6 mb-8">
+      <div className="mt-4 mb-5">
         <h1 className="text-heading text-slate-900 dark:text-white mb-1">Create your account</h1>
         <p className="text-body text-slate-500 dark:text-slate-400">Get started in 2 minutes</p>
       </div>
@@ -131,7 +131,7 @@ export default function SignupPage() {
         </div>
 
         {/* Actions */}
-        <div className="space-y-3 pt-6 pb-4">
+        <div className="space-y-3 pt-4 pb-2">
           <Button type="submit" loading={isLoading} icon={<IconUserPlus size={18} stroke={1.5} />}>
             Create Account
           </Button>

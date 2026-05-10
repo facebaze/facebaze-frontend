@@ -129,6 +129,19 @@ export default function FaceCapturePage() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
+  const faceCheckRef = useRef(false)
+  const livenessTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const detectionCanvasRef = useRef<HTMLCanvasElement | null>(null)
+  const stateRef = useRef(state)
+
+  // Keep stateRef in sync for use inside interval callbacks
+  useEffect(() => { stateRef.current = state }, [state])
+
+  // Off-screen canvas for face detection analysis
+  useEffect(() => {
+    detectionCanvasRef.current = document.createElement('canvas')
+    return () => { detectionCanvasRef.current = null }
+  }, [])
 
   // ─── Camera ─────────────────────────────────────────────────────────────────
   const initCamera = useCallback(async () => {
@@ -160,26 +173,134 @@ export default function FaceCapturePage() {
     return () => { streamRef.current?.getTracks().forEach((t) => t.stop()) }
   }, [initCamera])
 
-  // ─── Face Detection Simulation ──────────────────────────────────────────────
+  // ─── Face Detection (continuous, with FaceDetector API + fallback) ─────────
+  // Fallback: skin-tone analysis in YCbCr color space (works across skin tones)
+  const fallbackDetectFace = useCallback((video: HTMLVideoElement): boolean => {
+    const canvas = detectionCanvasRef.current
+    if (!canvas) return false
+    const ctx = canvas.getContext('2d', { willReadFrequently: true })
+    if (!ctx) return false
+    const w = 80, h = 100
+    canvas.width = w
+    canvas.height = h
+    const vw = video.videoWidth, vh = video.videoHeight
+    if (!vw || !vh) return false
+    // Sample the center region where the face oval is
+    ctx.drawImage(video, vw * 0.2, vh * 0.1, vw * 0.6, vh * 0.65, 0, 0, w, h)
+    const imageData = ctx.getImageData(0, 0, w, h)
+    const data = imageData.data
+    const totalSampled = Math.floor((w * h) / 2)
+    let skinCount = 0
+    for (let i = 0; i < data.length; i += 8) {
+      const r = data[i], g = data[i + 1], b = data[i + 2]
+      // YCbCr skin-tone detection (reliable across ethnicities)
+      const cb = 128 - 0.169 * r - 0.331 * g + 0.5 * b
+      const cr = 128 + 0.5 * r - 0.419 * g - 0.081 * b
+      if (cb >= 77 && cb <= 127 && cr >= 133 && cr <= 173) skinCount++
+    }
+    return skinCount / totalSampled > 0.12
+  }, [])
+
+  // Continuous detection loop — runs whenever camera is active
+  const isDetectionActive = state !== 'captured' && state !== 'uploading' && state !== 'error' && state !== 'initializing'
+
   useEffect(() => {
-    if (state !== 'positioning' && state !== 'liveness') return
-    const interval = setInterval(() => {
-      if (state === 'positioning') {
-        setFaceStatus((prev) => ({ ...prev, detected: true, aligned: true, lighting: 'good' }))
-        setState('liveness')
-      } else if (state === 'liveness') {
-        setTimeout(() => {
-          setFaceStatus((prev) => ({ ...prev, blinkDetected: true }))
-          setState('ready')
-        }, 2000)
+    if (!isDetectionActive) return
+
+    let active = true
+    let faceDetector: any = null
+
+    // Use native FaceDetector API when available (Chrome/Edge)
+    try {
+      if (typeof window !== 'undefined' && 'FaceDetector' in window) {
+        faceDetector = new (window as any).FaceDetector({ maxDetectedFaces: 1, fastMode: true })
       }
-    }, 1500)
-    return () => clearInterval(interval)
+    } catch { /* not available */ }
+
+    const runDetection = async () => {
+      if (!active || !videoRef.current) return
+      const video = videoRef.current
+      if (video.readyState < 2) return
+
+      let detected = false
+
+      if (faceDetector) {
+        try {
+          const faces = await faceDetector.detect(video)
+          detected = faces.length > 0
+        } catch {
+          detected = fallbackDetectFace(video)
+        }
+      } else {
+        detected = fallbackDetectFace(video)
+      }
+
+      if (!active) return
+      faceCheckRef.current = detected
+      const currentState = stateRef.current
+
+      if (detected) {
+        setFaceStatus(prev => {
+          if (prev.detected && prev.aligned) return prev
+          return { ...prev, detected: true, aligned: true, lighting: 'good' }
+        })
+        if (currentState === 'positioning') {
+          setState('liveness')
+        }
+      } else {
+        setFaceStatus(prev => {
+          if (!prev.detected) return prev
+          return { ...prev, detected: false, aligned: false }
+        })
+        // Face lost — revert from ready/liveness back to positioning
+        if (currentState === 'ready' || currentState === 'liveness') {
+          if (livenessTimerRef.current) {
+            clearTimeout(livenessTimerRef.current)
+            livenessTimerRef.current = null
+          }
+          setState('positioning')
+          setFaceStatus(prev => ({ ...prev, blinkDetected: false }))
+        }
+      }
+    }
+
+    const interval = setInterval(runDetection, 500)
+    const initialDelay = setTimeout(runDetection, 800)
+
+    return () => {
+      active = false
+      clearInterval(interval)
+      clearTimeout(initialDelay)
+    }
+  }, [isDetectionActive, fallbackDetectFace])
+
+  // Liveness timer — only advances to ready if face stays present for 2 seconds
+  useEffect(() => {
+    if (state !== 'liveness') return
+
+    livenessTimerRef.current = setTimeout(() => {
+      livenessTimerRef.current = null
+      if (faceCheckRef.current) {
+        setFaceStatus(prev => ({ ...prev, blinkDetected: true }))
+        setState('ready')
+      } else {
+        // Face left during liveness check
+        setState('positioning')
+        setFaceStatus(prev => ({ ...prev, blinkDetected: false, detected: false, aligned: false }))
+      }
+    }, 2000)
+
+    return () => {
+      if (livenessTimerRef.current) {
+        clearTimeout(livenessTimerRef.current)
+        livenessTimerRef.current = null
+      }
+    }
   }, [state])
 
   // ─── Capture ────────────────────────────────────────────────────────────────
   const handleCapture = useCallback(() => {
-    if (!videoRef.current || !canvasRef.current) return
+    if (!videoRef.current || !canvasRef.current || !faceCheckRef.current) return
     const video = videoRef.current
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
@@ -228,6 +349,11 @@ export default function FaceCapturePage() {
     setCapturedImage(null)
     setError(null)
     setFaceStatus({ detected: false, aligned: false, lighting: 'good', blinkDetected: false })
+    faceCheckRef.current = false
+    if (livenessTimerRef.current) {
+      clearTimeout(livenessTimerRef.current)
+      livenessTimerRef.current = null
+    }
     initCamera()
   }
 
@@ -469,8 +595,8 @@ export default function FaceCapturePage() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             >
-              <Button onClick={handleCapture} icon={<IconCamera size={20} />}>
-                Capture Photo
+              <Button onClick={handleCapture} disabled={!faceStatus.detected} icon={<IconCamera size={20} />}>
+                {faceStatus.detected ? 'Capture Photo' : 'Position your face'}
               </Button>
             </motion.div>
           )}

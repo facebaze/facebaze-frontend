@@ -69,8 +69,8 @@ export default function PhonePage() {
       </button>
 
       {/* Header */}
-      <div className="mt-6 mb-8">
-        <div className="w-12 h-12 rounded-2xl bg-brand-50 dark:bg-brand-950 flex items-center justify-center mb-4">
+      <div className="mt-4 mb-5">
+        <div className="w-12 h-12 rounded-2xl bg-brand-50 dark:bg-brand-950 flex items-center justify-center mb-3">
           <IconPhone size={22} className="text-brand-600" stroke={1.5} />
         </div>
         <h1 className="text-heading text-slate-900 dark:text-white mb-1">Enter your number</h1>
@@ -153,7 +153,7 @@ export default function PhonePage() {
         </div>
 
         {/* CTA */}
-        <div className="mt-auto pt-6 pb-4 space-y-3">
+        <div className="mt-auto pt-4 pb-2 space-y-3">
           <Button onClick={handleSend} loading={isLoading} disabled={!isValid} icon={<IconSend size={18} stroke={1.5} />}>
             Send OTP
           </Button>

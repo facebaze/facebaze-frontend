@@ -186,7 +186,7 @@ export default function LoginPage() {
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.2 }}
           >
-            <div className="mt-6 mb-8">
+            <div className="mt-4 mb-5">
               <h1 className="text-heading text-slate-900 dark:text-white mb-1">Welcome back</h1>
               <p className="text-body text-slate-500 dark:text-slate-400">Sign in to your account</p>
             </div>
@@ -236,7 +236,7 @@ export default function LoginPage() {
               </div>
 
               {/* Actions */}
-              <div className="space-y-3 pt-6 pb-4">
+              <div className="space-y-3 pt-4 pb-2">
                 <Button type="submit" loading={isLoading} icon={<IconLogin size={18} stroke={1.5} />}>
                   Log In
                 </Button>
@@ -295,8 +295,8 @@ export default function LoginPage() {
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.2 }}
           >
-            <div className="mt-6 mb-8">
-              <div className="w-12 h-12 rounded-2xl bg-brand-50 dark:bg-brand-950 flex items-center justify-center mb-4">
+            <div className="mt-4 mb-5">
+              <div className="w-12 h-12 rounded-2xl bg-brand-50 dark:bg-brand-950 flex items-center justify-center mb-3">
                 <IconShieldCheck size={22} className="text-brand-600" stroke={1.5} />
               </div>
               <h1 className="text-heading text-slate-900 dark:text-white mb-1">Check your email</h1>
@@ -357,7 +357,7 @@ export default function LoginPage() {
               </p>
 
               {/* CTA */}
-              <div className="mt-auto pt-6 pb-4">
+              <div className="mt-auto pt-4 pb-2">
                 <Button
                   onClick={() => {
                     const code = digits.join('')

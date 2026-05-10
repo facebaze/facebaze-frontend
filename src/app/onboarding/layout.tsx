@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { useAuthStore } from '@/stores/auth.store'
 import { useOnboardingStore } from '@/stores/onboarding.store'
 
@@ -17,7 +17,16 @@ export default function OnboardingLayout({
 }) {
   const router = useRouter()
   const { isAuthenticated, isInitialized, user } = useAuthStore()
-  const { stepIndex, totalSteps } = useOnboardingStore()
+  const { stepIndex, totalSteps, currentStep } = useOnboardingStore()
+  const pathname = usePathname()
+
+  // Derive step from URL for accurate visual display
+  const pathSegment = pathname?.split('/').pop() || ''
+  const PATH_STEP_MAP: Record<string, number> = {
+    'consent': 0, 'face-capture': 1, 'quick-profile': 2, 'permission-mode': 3, 'complete': 4,
+  }
+  const displayStepIndex = PATH_STEP_MAP[pathSegment] ?? stepIndex
+  const isCompletePage = pathSegment === 'complete'
 
   useEffect(() => {
     if (!isInitialized) return
@@ -32,22 +41,43 @@ export default function OnboardingLayout({
     }
   }, [isAuthenticated, isInitialized, user?.role, router])
 
+  // Route protection — prevent skipping ahead
+  useEffect(() => {
+    if (!isInitialized || !isAuthenticated || isCompletePage) return
+    if (displayStepIndex > stepIndex) {
+      router.replace(`/onboarding/${currentStep}`)
+    }
+  }, [displayStepIndex, stepIndex, isInitialized, isAuthenticated, currentStep, router, isCompletePage])
+
   if (!isInitialized || !isAuthenticated) return null
 
+  // Don't show stepper on completion page
+  if (isCompletePage) {
+    return (
+      <main className="flex-1 flex flex-col h-full bg-surface-primary dark:bg-slate-950 bg-mesh safe-padding relative overflow-hidden">
+        <div className="absolute inset-0 bg-abstract opacity-40 pointer-events-none" />
+        <div className="absolute inset-0 bg-lines pointer-events-none" />
+        <div className="flex-1 flex flex-col px-6 pb-safe-bottom">
+          {children}
+        </div>
+      </main>
+    )
+  }
+
   return (
-    <main className="flex-1 flex flex-col min-h-screen bg-surface-primary dark:bg-slate-950 bg-mesh safe-padding relative">
+    <main className="flex-1 flex flex-col h-full bg-surface-primary dark:bg-slate-950 bg-mesh safe-padding relative overflow-hidden">
       <div className="absolute inset-0 bg-abstract opacity-40 pointer-events-none" />
       <div className="absolute inset-0 bg-lines pointer-events-none" />
       {/* Stepper */}
       <div className="pt-safe-top px-8 pt-16 pb-6">
         {/* Step counter */}
         <p className="text-center text-xs font-medium text-white/70 mb-4 tracking-wide">
-          STEP {stepIndex + 1} OF {totalSteps}
+          STEP {displayStepIndex + 1} OF {totalSteps}
         </p>
         <div className="flex items-center justify-between">
           {STEP_LABELS.map((label, i) => {
-            const isCompleted = i < stepIndex
-            const isActive = i === stepIndex
+            const isCompleted = i < displayStepIndex
+            const isActive = i === displayStepIndex
             return (
               <div key={label} className="flex flex-col items-center flex-1">
                 {/* Connector + Circle row */}
@@ -56,7 +86,7 @@ export default function OnboardingLayout({
                   {i > 0 && (
                     <div
                       className={`h-[3px] flex-1 rounded-full transition-all duration-500 ${
-                        i <= stepIndex ? 'bg-white' : 'bg-white/20'
+                        i <= displayStepIndex ? 'bg-white' : 'bg-white/20'
                       }`}
                     />
                   )}
@@ -84,7 +114,7 @@ export default function OnboardingLayout({
                   {i < STEP_LABELS.length - 1 && (
                     <div
                       className={`h-[3px] flex-1 rounded-full transition-all duration-500 ${
-                        i < stepIndex ? 'bg-white' : 'bg-white/20'
+                        i < displayStepIndex ? 'bg-white' : 'bg-white/20'
                       }`}
                     />
                   )}

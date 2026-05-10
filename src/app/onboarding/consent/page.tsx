@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { IconShield, IconBell, IconEye, IconLock, IconArrowRight } from '@tabler/icons-react'
@@ -43,6 +43,14 @@ export default function ConsentPage() {
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget
     if (scrollTop + clientHeight >= scrollHeight - 30) {
+      setHasScrolledToBottom(true)
+    }
+  }, [])
+
+  // If content doesn't overflow, auto-mark as scrolled to bottom
+  useEffect(() => {
+    const el = scrollRef.current
+    if (el && el.scrollHeight <= el.clientHeight + 30) {
       setHasScrolledToBottom(true)
     }
   }, [])

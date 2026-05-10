@@ -130,7 +130,7 @@ function VendorEventAnalyticsContent() {
       <div className="px-4 py-5 space-y-4 pb-safe-bottom">
         {/* KPI Cards */}
         {summary && (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-card">
               <div className="w-8 h-8 rounded-xl bg-brand-50 dark:bg-brand-900/30 flex items-center justify-center mb-2">
                 <IconScan size={16} className="text-brand-600 dark:text-brand-400" />

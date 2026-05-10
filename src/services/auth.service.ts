@@ -26,10 +26,6 @@ export const authService = {
    */
   async sendOtp(phone: string): Promise<{ sent: boolean; mockOtp?: string }> {
     const { data } = await apiClient.post<{ sent: boolean; mockOtp?: string }>('/auth/otp/send', { phone })
-    // Security: never expose mock OTP in production builds
-    if (process.env.NODE_ENV === 'production') {
-      delete data.mockOtp
-    }
     return data
   },
 

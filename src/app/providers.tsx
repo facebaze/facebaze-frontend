@@ -7,6 +7,7 @@ import { useOnboardingStore } from '@/stores/onboarding.store'
 import { useSocketStore } from '@/stores/socket.store'
 import { useThemeStore } from '@/stores/theme.store'
 import { Toaster } from '@/components/ui'
+import { PWAInstallPrompt } from '@/components/ui/PWAInstallPrompt'
 
 // Single QueryClient instance — optimized for mobile
 const queryClient = new QueryClient({
@@ -44,6 +45,14 @@ export function Providers({ children }: ProvidersProps) {
       initialize()
       initOnboarding()
       initTheme()
+
+      // Register service worker for PWA
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').then((reg) => {
+          // Check for updates periodically (every 30 min)
+          setInterval(() => reg.update(), 30 * 60 * 1000)
+        }).catch(() => {})
+      }
     }
   }, [initialize, initOnboarding, initTheme])
 
@@ -60,6 +69,7 @@ export function Providers({ children }: ProvidersProps) {
     <QueryClientProvider client={queryClient}>
       {children}
       <Toaster />
+      <PWAInstallPrompt />
     </QueryClientProvider>
   )
 }

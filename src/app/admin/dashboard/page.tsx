@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Activity,
   TrendingUp,
+  BarChart3,
 } from 'lucide-react'
 import { adminService, type AdminDashboardSummary, type SystemHealth } from '@/services/admin.service'
 
@@ -55,6 +56,7 @@ export default function AdminDashboardPage() {
     : []
 
   const quickLinks = [
+    { label: 'Platform Analytics', href: '/admin/analytics', icon: BarChart3 },
     { label: 'Manage Users', href: '/admin/users', icon: Users },
     { label: 'Manage Vendors', href: '/admin/vendors', icon: ShieldCheck },
     { label: 'All Events', href: '/admin/events', icon: CalendarDays },

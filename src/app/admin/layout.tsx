@@ -9,6 +9,7 @@ import {
   CalendarDays,
   ClipboardList,
   Activity,
+  BarChart3,
   Menu,
   X,
   ChevronRight,
@@ -18,6 +19,7 @@ import { useAuthStore } from '@/stores/auth.store'
 
 const navItems = [
   { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+  { label: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
   { label: 'Users', href: '/admin/users', icon: Users },
   { label: 'Vendors', href: '/admin/vendors', icon: ShieldCheck },
   { label: 'Events', href: '/admin/events', icon: CalendarDays },

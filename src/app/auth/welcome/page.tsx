@@ -9,14 +9,14 @@ export default function WelcomePage() {
   const router = useRouter()
 
   return (
-    <div className="relative flex-1 flex flex-col min-h-screen bg-white dark:bg-slate-950">
+    <div className="relative flex-1 flex flex-col h-full bg-white dark:bg-slate-950">
       {/* Subtle gradient background */}
       <div className="absolute inset-0 bg-gradient-to-b from-brand-50/60 via-white to-white dark:from-brand-950/30 dark:via-slate-950 dark:to-slate-950" />
 
       <div className="relative z-10 flex-1 flex flex-col px-6 pt-safe-top">
         {/* Hero */}
         <motion.div
-          className="flex-1 flex flex-col items-center justify-center py-12"
+          className="flex-1 flex flex-col items-center justify-center py-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -76,7 +76,7 @@ export default function WelcomePage() {
 
         {/* Role selection cards */}
         <motion.div
-          className="pb-8 space-y-3"
+          className="pb-6 space-y-3"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45 }}
