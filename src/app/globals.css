@@ -57,8 +57,6 @@
     flex-direction: column;
     height: 100%;
     overflow: hidden;
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   /* iOS-style input styling */
@@ -78,10 +76,6 @@
       /* Ensure full height in standalone mode */
       height: 100vh;
       height: 100dvh;
-    }
-    #__next {
-      /* Extra top padding in standalone to account for status bar */
-      padding-top: max(env(safe-area-inset-top, 0px), 20px);
     }
   }
 

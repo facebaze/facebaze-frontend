@@ -61,7 +61,7 @@ export default function MainLayout({
   return (
     <div className="flex flex-col h-full bg-gradient-to-b from-slate-50 via-white to-slate-100 dark:from-slate-800 dark:via-slate-800/90 dark:to-slate-700">
       {/* Page content — single scroll container */}
-      <div className="flex-1 min-h-0 overflow-y-auto -webkit-overflow-scrolling-touch pb-[calc(5.5rem+env(safe-area-inset-bottom))]" style={{ zIndex: 0, WebkitOverflowScrolling: 'touch' }}>
+      <div className="flex-1 min-h-0 overflow-y-auto pb-20" style={{ zIndex: 0, WebkitOverflowScrolling: 'touch' as any }}>
         {children}
       </div>
 
