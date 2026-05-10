@@ -66,13 +66,14 @@ export default function SubscriptionPage() {
   const [currentPlan] = useState<'free' | 'pro' | 'business'>('free')
   const [selectedPlan, setSelectedPlan] = useState<'free' | 'pro' | 'business'>(currentPlan)
 
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
+
   // Mock usage stats
   const scansUsed = 5
   const scanLimit = 10
 
   const handleUpgrade = () => {
-    // In production: trigger native in-app purchase flow
-    alert('In-app purchase will be available when the app is published.')
+    setUpgradeModalOpen(true)
   }
 
   return (
@@ -172,6 +173,36 @@ export default function SubscriptionPage() {
       <p className="text-center text-tiny text-slate-400 mt-4">
         Cancel anytime. Billed monthly.
       </p>
+
+      {/* Upgrade coming-soon overlay */}
+      {upgradeModalOpen && (
+        <motion.div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          onClick={() => setUpgradeModalOpen(false)}
+        >
+          <motion.div
+            className="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-xl"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-center w-12 h-12 bg-brand-100 dark:bg-brand-900/30 rounded-full mx-auto mb-4">
+              <IconStar size={24} className="text-brand-600" />
+            </div>
+            <h3 className="text-body font-bold text-center text-slate-900 dark:text-white mb-2">
+              Coming Soon
+            </h3>
+            <p className="text-caption text-center text-slate-500 dark:text-slate-400 mb-5">
+              Premium plans with in-app purchase will be available soon. We&apos;ll notify you when upgrades are ready.
+            </p>
+            <Button onClick={() => setUpgradeModalOpen(false)}>
+              Got it
+            </Button>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   )
 }
