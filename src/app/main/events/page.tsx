@@ -84,7 +84,7 @@ export default function EventsPage() {
   const activeFilterCount = (selectedCategory ? 1 : 0)
 
   return (
-    <div className="flex-1 overflow-y-auto pb-8">
+    <div className="flex-1 pb-8">
       {/* Sticky Header */}
       <div className="sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-100/50 dark:border-slate-800/50">
         <div className="px-4 pt-safe-top">

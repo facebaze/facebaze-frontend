@@ -103,7 +103,7 @@ function EventDetailContent() {
   const descLong = (event.description?.length ?? 0) > 200
 
   return (
-    <div className="flex-1 overflow-y-auto pb-8">
+    <div className="flex-1 pb-8">
       {/* ─── Hero Cover ─── */}
       <div className="relative">
         <div className="h-52 sm:h-64 md:h-72 w-full overflow-hidden">

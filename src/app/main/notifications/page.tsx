@@ -76,7 +76,7 @@ export default function NotificationsPage() {
   const groups = groupByDay(notifications)
 
   return (
-    <div className="flex-1 overflow-y-auto pt-safe-top pb-8">
+    <div className="flex-1 pt-safe-top pb-8">
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-6 pb-4">
         <div>

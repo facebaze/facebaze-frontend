@@ -29,6 +29,18 @@ export const useLocationStore = create<LocationState>((set, get) => ({
     if (typeof navigator !== 'undefined' && navigator.permissions) {
       navigator.permissions.query({ name: 'geolocation' }).then((result) => {
         set({ permissionState: result.state as any })
+
+        // Listen for permission changes (user grants after prompt)
+        result.addEventListener('change', () => {
+          set({ permissionState: result.state as any })
+          if (result.state === 'granted') {
+            const current = get()
+            if (!current.location || current.location.city === 'Unknown') {
+              get().requestLocation()
+            }
+          }
+        })
+
         // Auto-detect if granted or prompt (no saved valid location)
         const current = get()
         if (!current.location || current.location.city === 'Unknown') {

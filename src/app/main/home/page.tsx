@@ -77,14 +77,14 @@ export default function HomePage() {
 
   useEffect(() => { loadData() }, [loadData])
 
-  const allEvents = [...activeEvents, ...events.filter(e => !activeEvents.some(a => a.id === e.id))]
+  const allEvents = [...activeEvents, ...events]
   const featuredEvent = allEvents[0]
   const restEvents = allEvents.slice(1)
   const firstName = profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'there'
   const totalConnections = stats.saved_contacts + stats.scans_today
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1">
       {/* ─── Header ─── */}
       <div className="px-4 pt-safe-top">
         <div className="flex items-center justify-between pt-6 pb-2">
@@ -383,7 +383,7 @@ function CompactEventCard({
         <div className="flex items-center gap-2 mt-1.5">
           {event.category && (
             <span className="text-[9px] font-semibold bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-1.5 py-0.5 rounded capitalize">
-              {event.category.replace(/_/g, ' ')}
+              {event.category}
             </span>
           )}
           {event.opted_in && (

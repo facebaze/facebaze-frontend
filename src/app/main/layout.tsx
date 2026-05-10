@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { IconHome, IconScan, IconCalendarEvent, IconAddressBook, IconSettings } from '@tabler/icons-react'
 import { useAuthStore } from '@/stores/auth.store'
+import { useLocationStore } from '@/stores/location.store'
 import { notificationService } from '@/services/notification.service'
 import { cn } from '@/lib/utils'
 
@@ -28,6 +29,7 @@ export default function MainLayout({
   const router = useRouter()
   const pathname = usePathname()
   const { isAuthenticated, isInitialized } = useAuthStore()
+  const initializeLocation = useLocationStore((s) => s.initialize)
   const [unreadCount, setUnreadCount] = useState(0)
 
   useEffect(() => {
@@ -35,6 +37,13 @@ export default function MainLayout({
       router.replace('/auth/welcome')
     }
   }, [isAuthenticated, isInitialized, router])
+
+  // Initialize location detection as soon as user enters main app
+  useEffect(() => {
+    if (isAuthenticated) {
+      initializeLocation()
+    }
+  }, [isAuthenticated, initializeLocation])
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -51,8 +60,8 @@ export default function MainLayout({
 
   return (
     <div className="flex flex-col h-full bg-gradient-to-b from-slate-50 via-white to-slate-100 dark:from-slate-800 dark:via-slate-800/90 dark:to-slate-700">
-      {/* Page content */}
-      <div className="flex-1 overflow-y-auto pb-[calc(5.5rem+env(safe-area-inset-bottom))] isolate" style={{ zIndex: 0 }}>
+      {/* Page content — single scroll container */}
+      <div className="flex-1 min-h-0 overflow-y-auto -webkit-overflow-scrolling-touch pb-[calc(5.5rem+env(safe-area-inset-bottom))]" style={{ zIndex: 0, WebkitOverflowScrolling: 'touch' }}>
         {children}
       </div>
 

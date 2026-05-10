@@ -73,7 +73,7 @@ export default function SettingsPage() {
   const fullName = profile?.full_name || user?.email?.split('@')[0] || 'User'
 
   return (
-    <div className="flex-1 overflow-y-auto pt-safe-top pb-8">
+    <div className="flex-1 pt-safe-top pb-8">
       <div className="px-5 pt-8 pb-3">
         <h1 className="text-heading text-slate-900 dark:text-white">Settings</h1>
       </div>

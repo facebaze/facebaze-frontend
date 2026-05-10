@@ -124,7 +124,7 @@ export default function ProfilePage() {
   ].filter((l) => l.url)
 
   return (
-    <div className="flex-1 overflow-y-auto pt-safe-top pb-8">
+    <div className="flex-1 pt-safe-top pb-8">
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-6 pb-4">
         <h1 className="text-heading text-slate-900 dark:text-white">My Profile</h1>
